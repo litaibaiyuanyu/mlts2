@@ -1,99 +1,69 @@
 var iUp = (function () {
-	var t = 0,
-		d = 150,
-		clean = function () {
-			t = 0;
-		},
-		up = function (e) {
-			setTimeout(function () {
-				$(e).addClass("up")
-			}, t);
-			t += d;
-		},
-		down = function (e) {
-			$(e).removeClass("up");
-		},
-		toggle = function (e) {
-			setTimeout(function () {
-				$(e).toggleClass("up")
-			}, t);
-			t += d;
-		};
-	return {
-		clean: clean,
-		up: up,
-		down: down,
-		toggle: toggle
-	}
+    // 保持原有动画逻辑不变
+    var t = 0,
+        d = 150,
+        clean = function () {
+            t = 0;
+        },
+        up = function (e) {
+            setTimeout(function () {
+                $(e).addClass("up")
+            }, t);
+            t += d;
+        },
+        down = function (e) {
+            $(e).removeClass("up");
+        },
+        toggle = function (e) {
+            setTimeout(function () {
+                $(e).toggleClass("up")
+            }, t);
+            t += d;
+        };
+    return {
+        clean: clean,
+        up: up,
+        down: down,
+        toggle: toggle
+    }
 })();
 
 $(document).ready(function () {
 
-	// 获取一言数据
-	fetch('https://v1.hitokoto.cn').then(function (res) {
-		return res.json();
-	}).then(function (e) {
-		$('#description').html(e.hitokoto + "<br/> -「<strong>" + e.from + "</strong>」")
-	}).catch(function (err) {
-		console.error(err);
-	})
+    // 固定一言数据
+    const FIXED_HITOKOTO = {
+        hitokoto: "在有限的时间里无限的爱你！",
+        from: "鵷羽"
+    };
+    $('#description').html(
+        `${FIXED_HITOKOTO.hitokoto}<br/> -「<strong>${FIXED_HITOKOTO.from}</strong>」`
+    );
 
-	
-	// var url = 'https://query.yahooapis.com/v1/public/yql' + 
-    // '?q=' + encodeURIComponent('select * from json where url=@url') +
-    // '&url=' + encodeURIComponent('https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8') +
-	// '&format=json&callback=?';
+    // 固定背景设置
+    const $panel = $('#panel');
+    const FIXED_BG_URL = 'background.png'; // 当前目录下的图片
 
-	/**
-	 * 获取Bing壁纸
-	 * 原先 YQL 已经无法提供服务了
-	 * 改用 JsonBird：https://bird.ioliu.cn/
-	 * 改用 JsoBird已经失效，换用github博主开放的端口：https://realwds-api.vercel.app/bing
-	 * 
-	 */
-	var url = 'https://realwds-api.vercel.app/bing?count=8';
-	var imgUrls = JSON.parse(sessionStorage.getItem("imgUrls"));
-	var index = sessionStorage.getItem("index");
-	var $panel = $('#panel');
-	if(imgUrls == null){
-		imgUrls = new Array();
-		index = 0;		
-		$.get(url,function (result) {
-			images = result.data.images;
-			console.log("数据为：");
-			console.log(images);
-			for (let i = 0; i < images.length; i++) {
-				const item = images[i];
-				imgUrls.push(item.url);
-			}
-			var imgUrl = imgUrls[index];
-			var url = "https://www.bing.com"+imgUrl;
-			$panel.css("background", "url('"+url+"') center center no-repeat #666");
-			$panel.css("background-size", "cover");
-			sessionStorage.setItem("imgUrls",JSON.stringify(imgUrls));
-			sessionStorage.setItem("index",index);
-			});
-	}else{
-		if(index == 7)
-			index = 0;
-		else
-			index++;
-		var imgUrl = imgUrls[index];
-		var url = "https://www.bing.com"+imgUrl;
-		$panel.css("background", "url('"+url+"') center center no-repeat #666");
-		$panel.css("background-size", "cover");
-		sessionStorage.setItem("index",index);
-	}
-	
-	$(".iUp").each(function (i, e) {
-		iUp.up(e);
-	});
+    // 设置背景并添加错误处理
+    $panel.css({
+        'background': `url('${FIXED_BG_URL}') center/cover no-repeat #666`,
+        'background-size': 'cover'
+    }).on('error', function() {
+        console.error('背景图片加载失败');
+        $(this).css('background', '#666'); // 降级方案
+    });
 
-	$(".js-avatar")[0].onload = function () {
-		$(".js-avatar").addClass("show");
-	}
+    // 保持原有动画初始化
+    $(".iUp").each(function (i, e) {
+        iUp.up(e);
+    });
+
+    // 保持头像加载逻辑
+    $(".js-avatar")[0].onload = function () {
+        $(".js-avatar").addClass("show");
+    }
 });
 
+// 保持移动菜单切换逻辑不变
 $('.btn-mobile-menu__icon').click(function() {
     if ($('.navigation-wrapper').css('display') == "block") {
       $('.navigation-wrapper').on('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
